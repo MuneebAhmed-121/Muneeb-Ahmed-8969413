@@ -1,0 +1,260 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+// global variables (prices + quantities)
+float Lays = 5;
+float Chocolate = 3.5;
+float Candy = 2.5;
+int Lays_QTY = 15;
+int Chocolate_QTY = 15;
+int Candy_QTY = 15;
+float total_amount = 0;
+int password = 1234;
+
+// minimum quantities before low stock alert
+#define MIN_LAYS 3
+#define MIN_CHOCOLATE 3
+#define MIN_CANDY 3
+
+// function prototypes (just to keep it organized)
+void purchase_product();
+void admin_mode();
+void replenish_products();
+void change_prices();
+void display_total_sale();
+void display_product_qty();
+
+// -------------------- MAIN PROGRAM -----------------------
+int main() {
+    int choice;
+
+    while (1) {
+        printf("\n===== VENDING MACHINE =====\n");
+        printf("1. Purchase a Product\n");
+        printf("2. Admin Mode\n");
+        printf("3. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                purchase_product();
+                break;
+            case 2:
+                admin_mode();
+                break;
+            case 3:
+                printf("Exiting... Have a good day!\n");
+                return 0;
+            default:
+                printf("Invalid choice! Try again.\n");
+        }
+    }
+}
+
+// ---------------- PURCHASE FUNCTION -----------------------
+void purchase_product() {
+    float purchase = 0, coin = 0, payment = 0;
+    int choice;
+
+    while (1) {
+        printf("\nAvailable Products:\n");
+        printf("1. Lays - %.2f AED (%d left)\n", Lays, Lays_QTY);
+        printf("2. Chocolate - %.2f AED (%d left)\n", Chocolate, Chocolate_QTY);
+        printf("3. Candy - %.2f AED (%d left)\n", Candy, Candy_QTY);
+        printf("0. Cancel Purchase\n");
+        printf("-1. Show list again\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+        
+        if (choice == 0) { 
+            //Cancelling the Purcahse if user inputs 0 
+            printf("Purchase cancelled.\n");
+            return;
+        } else if (choice == -1) {
+            //Looping back to beginning if user inputs -1 
+            continue;
+        }
+
+        switch (choice) {
+            case 1:
+                if (Lays_QTY <= 0) {
+                    //If out qty is 0 then out of stock will be printed
+                    printf("Sorry, Lays is sold out!\n");
+                    continue;
+                }
+                purchase = Lays;
+                Lays_QTY--;
+                break;
+            case 2:
+                if (Chocolate_QTY <= 0) {
+                    printf("Chocolate is sold out!\n");
+                    continue;
+                }
+                purchase = Chocolate;
+                Chocolate_QTY--;
+                break;
+            case 3:
+                if (Candy_QTY <= 0) {
+                    printf("Candy sold out!\n");
+                    continue;
+                }
+                purchase = Candy;
+                Candy_QTY--;
+                break;
+            default:
+                printf("Invalid choice.\n");
+                continue;
+        }
+
+        printf("You selected item costing %.2f AED\n", purchase);
+        printf("Insert coins (only 1, 0.5, 0.25 AED accepted):\n");
+
+        while (payment < purchase) {
+            //Inserting the coins 
+            printf("Remaining: %.2f AED. Insert coin: ", purchase - payment);
+            scanf("%f", &coin);
+
+            if (coin == 1 || coin == 0.5 || coin == 0.25) {
+                //Coin payment of only 1, 0.5 and 0.25 
+                payment += coin;
+                printf("Accepted %.2f AED. Total inserted: %.2f AED\n", coin, payment);
+            } else {
+                int cancel;
+                printf("Invalid coin! Only 1, 0.5, 0.25 AED accepted.\n");
+                //If invalid coin is entered. 
+                printf("Enter 0 to cancel or 1 to continue: ");
+                scanf("%d", &cancel);
+                if (cancel == 0) {
+                    printf("Transaction cancelled. Returning %.2f AED.\n", payment);
+                    return;
+                }
+            }
+        }
+
+        float change = payment - purchase;
+        total_amount += purchase;
+
+        printf("Payment complete! Please collect your item and %.2f AED change.\n", change);
+
+        // low stock warnings
+        if (Lays_QTY <= MIN_LAYS)
+            printf("ALERT: Lays stock low (%d left)\n", Lays_QTY);
+        if (Chocolate_QTY <= MIN_CHOCOLATE)
+            printf("ALERT: Chocolate stock low (%d left)\n", Chocolate_QTY);
+        if (Candy_QTY <= MIN_CANDY)
+            printf("ALERT: Candy stock low (%d left)\n", Candy_QTY);
+
+        return;
+    }
+}
+
+// ---------------- ADMIN MODE -----------------------
+void admin_mode() {
+    int input_pass, choice;
+    printf("\nEnter Admin Password: ");
+    scanf("%d", &input_pass);
+
+    if (input_pass != password) {
+        //Returning back to main menu if the password is incorrect. 
+        printf("Incorrect password! Back to main menu.\n");
+        return;
+    }
+
+    while (1) {
+        //Printing each option in Admin menu 
+        printf("\n*** ADMIN MENU ***\n");
+        printf("1. Replenish Products\n");
+        printf("2. Change Prices\n");
+        printf("3. Show Total Sales\n");
+        printf("4. Show Product Quantities\n");
+        printf("0. Exit Admin Mode\n");
+        printf("Enter choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                replenish_products();
+                break;
+            case 2:
+                change_prices();
+                break;
+            case 3:
+                display_total_sale();
+                break;
+            case 4:
+                display_product_qty();
+                break;
+            case 0:
+                printf("Leaving admin mode...\n");
+                return;
+            default:
+                printf("Invalid option!\n");
+        }
+    }
+}
+
+// replenishes product randomly from 0 to 20 
+void replenish_products() {
+    srand(time(0));
+    Lays_QTY = (rand() % 20) + 1;
+    Chocolate_QTY = (rand() % 20) + 1;
+    Candy_QTY = (rand() % 20) + 1;
+    printf("Products restocked randomly!\n");
+    display_product_qty();
+}
+
+// change product prices
+void change_prices() {
+    int choice;
+    float new_price;
+
+    printf("\nChange prices:\n");
+    printf("1. Lays\n2. Chocolate\n3. Candy\n0. Cancel\nEnter: ");
+    scanf("%d", &choice);
+
+    switch (choice) {
+        case 1:
+            //Changing the price of product for the value user inputs 
+            printf("Enter new price for Lays: ");
+            scanf("%f", &new_price);
+            Lays = new_price;
+            break;
+        case 2:
+            printf("Enter new price for Chocolate: ");
+            scanf("%f", &new_price);
+            Chocolate = new_price;
+            break;
+        case 3:
+            printf("Enter new price for Candy: ");
+            scanf("%f", &new_price);
+            Candy = new_price;
+            break;
+        case 0:
+            return;
+        default:
+            printf("Invalid input.\n");
+    }
+    printf("Price updated.\n");
+}
+
+// show total sales and optionally reset
+void display_total_sale() {
+    int reset;
+    printf("Total Sales: %.2f AED\n", total_amount);
+    printf("Reset total sale? (1=Yes, 0=No): ");
+    scanf("%d", &reset);
+    if (reset == 1) {
+        total_amount = 0;
+        printf("Sales reset. (Dont forget to collect the cash!)\n");
+    }
+}
+
+// show stock of all products
+void display_product_qty() {
+    printf("\n*** PRODUCT STOCK ***\n");
+    printf("Lays: %d\n", Lays_QTY);
+    printf("Chocolate: %d\n", Chocolate_QTY);
+    printf("Candy: %d\n", Candy_QTY);
+}
