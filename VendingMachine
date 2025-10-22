@@ -198,9 +198,9 @@ void admin_mode() {
 // replenishes product randomly from 0 to 20 
 void replenish_products() {
     srand(time(0));
-    Lays_QTY = (rand() % 20) + 1;
-    Chocolate_QTY = (rand() % 20) + 1;
-    Candy_QTY = (rand() % 20) + 1;
+    Lays_QTY += (rand() % 20) + 1;
+    Chocolate_QTY += (rand() % 20) + 1;
+    Candy_QTY += (rand() % 20) + 1;
     printf("Products restocked randomly!\n");
     display_product_qty();
 }
